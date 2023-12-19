@@ -56,7 +56,7 @@ See also the list of [contributors](https://github.com/bparment1/raster-proc/gra
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENS](LICENSE) file for details
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details
 
 ## Acknowledgments
 
