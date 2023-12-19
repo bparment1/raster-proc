@@ -1,0 +1,21 @@
+gdal
+numpy
+fiona # library for reading/writing GIS files, comes w/ geopandas
+shapely
+contextily
+geopandas
+cartopy
+pyproj
+matplotlib
+seaborn
+pandas
+pathlib
+datetime
+mapclassify
+folium
+xarray
+rioxarray
+earthpy
+pystac
+planetary-computer
+
