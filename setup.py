@@ -8,3 +8,4 @@ setup(
     packages=find_namespace_packages(),
     install_requires=requirements,
     version="0.0.1"
+)
