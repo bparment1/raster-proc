@@ -137,3 +137,10 @@ print(type(items))
 print(type(items[0]))
 items[0].to_dict()
 
+gdf = gpd.GeoDataFrame.from_features(items.to_dict(), crs="epsg:4326")
+print(gdf.shape)
+print(gdf.columns)
+print(gdf.to_string())
+
+print('Script ended')
+

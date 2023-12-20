@@ -1,4 +1,71 @@
 from pystac_client import item_search
+import pandas as pd
+
+import os
+import numpy as np
+from itertools import repeat
+import fiona # library for reading/writing GIS files, comes w/ geopandas
+from shapely.geometry import Point, LineString, Polygon
+import contextily as ctx  # import
+
+# Mapping,vector related imports
+import geopandas as gpd
+#import descartes #nessary for plotting in geopandas
+from cartopy import crs as ccrs
+from pyproj import Proj
+#from osgeo import osr
+from shapely import geometry
+from shapely.geometry import Point
+from shapely.geometry import box
+from shapely.geometry import shape
+from shapely.geometry import Polygon
+
+import matplotlib.pyplot as plt
+import matplotlib.cm as cm
+import matplotlib.colors as colors
+from matplotlib.colors import ListedColormap, BoundaryNorm
+from matplotlib import colors
+import matplotlib.patches as mpatches
+import seaborn as sns
+
+import numpy as np
+import subprocess
+import pandas as pd
+import os, glob
+import zipfile
+
+from pathlib import Path
+
+#pd.set_option('display.max_colwidth', None)
+import urllib
+import re
+import math
+from datetime import datetime
+from copy import deepcopy
+from numpy.core.multiarray import datetime_as_string
+import numpy.ma as ma
+
+from collections import OrderedDict
+#rasterio imports, gdal and imagery utility
+from rasterio.windows import Window
+import rasterio
+from osgeo import gdal
+from rasterio import plot
+from PIL import Image
+
+import mapclassify
+import folium
+import pyproj as proj
+import xarray as xr
+import rioxarray as rxr
+import earthpy as et
+import earthpy.plot as ep
+from folium.utilities import none_max
+import folium
+from pyproj import Transformer
+from typing import List, Tuple, Dict, Any
+from pandas.core.arrays import boolean
+
 #https://github.com/stac-utils/pystac-client/blob/1eaf0d97632c411279e8312b337faf842d657474/docs/tutorials/stac-metadata-viz.ipynb
 #Change the name of the file to include date and better formatting
 #Also adjust the resolution
