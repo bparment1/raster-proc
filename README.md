@@ -35,14 +35,28 @@ pip install -r requirements.txt
 ```
 
 
-
-
 ## Contributing
 
 - To install locally do:
 ```
 pip install -e .
 ```
+
+```angular2html
+python -m pip install --user --upgrade setuptools
+python setup.py sdist
+```
+python setup.py sdist bdist_wheel
+
+```angular2html
+pip install twine
+
+twine upload --repository testpypi dist/*
+
+```
+
+useful links:
+- https://kynan.github.io/blog/2020/05/23/how-to-upload-your-package-to-the-python-package-index-pypi-test-server
 
 ## Versioning
 
