@@ -2,7 +2,7 @@
 Raster processing and modeling python package for Earth Observation data.
 
 This package contains general functions to download, process and model Earth Observation/Remote Sensing datasets. The goal is to provide 
-a set of function to create image processing pipelines and offer additional functionality for analyses and modeling of Earth Observation data.
+a set of functions to create image processing pipelines and offer additional functionality for analyses and modeling of Earth Observation data.
 The package contains the following functionalities:
 
 - processing: download from STAC and procesing function for COGS and more
