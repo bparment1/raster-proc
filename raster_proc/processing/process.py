@@ -65,6 +65,8 @@ import folium
 from pyproj import Transformer
 from typing import List, Tuple, Dict, Any
 from pandas.core.arrays import boolean
+from pystac_client import Client
+
 
 def download_and_reproject_stac_file(date_val:str,
                                      selected_products:pd.DataFrame,
@@ -707,3 +709,75 @@ def convert_window_block_to_poly(ds: str|rasterio.io.DatasetReader) -> gpd.GeoDa
   gdf_window_coords = pd.concat(list_df_window_coords).reset_index(drop=True)
 
   return gdf_window_coords
+
+
+def process_sites(i: int,
+                  location_xy: Tuple,
+                  start_date:str,
+                  end_date:str,
+                  platform:str,
+                  bands_selected:List,
+                  image_size:int = 256,
+                  res_val: float = 10, #in meters
+                  URL:str = 'https://planetarycomputer.microsoft.com/api/stac/v1',
+                  image_collections:str ='sentinel-1-rtc',
+                  output_epsg = None, #use the epsg from aoi_poly
+                  output_res=0.00009) -> List:
+
+  x,y = tuple_xy
+
+  ### Part 1: create bounding box for AOI
+  #square_box_size = 0.1
+  square_box_size =(res_val/111000)*image_size  #in meters
+  points_bbox_poly_gdf = polygon_from_centroid(x_centroid=x,
+                                       y_centroid=y,
+                                       size=square_box_size)
+
+  bbox_poly_gdf = points_bbox_poly_gdf.loc[0:0,:]
+
+  ## Part 2: STAC QUERY
+
+  #query +formating of output from query
+  # custom headers
+  headers = []
+
+  catalog = Client.open(URL,
+                      modifier=planetary_computer.sign_inplace,
+                      headers=headers)
+
+  cat_search = catalog.search(
+  intersects=bbox_poly,
+  collections = image_collections,#can be landsat or anything of interest
+  datetime = f"{start_date}/{end_date}",
+  )
+
+  ### PART 3 select relevant bands
+  #arguments found at the beginning
+
+  selected_products2,items_gdf = get_selected_products_and_bands(cat_search,
+                                                      bands_selected,
+                                                      platform=platform)
+
+  selected_products2 = selected_products2.sort_values(by='date')
+  list_dates = list(selected_products2['date'].unique())
+
+  out_dir_site = os.path.join(out_dir,f'site_{i}')
+  if not os.path.exists(out_dir_site):
+    os.makedirs(out_dir_site)
+  os.chdir(out_dir_site)
+
+  list_output_files = []
+
+  for date_val in list_dates:
+    output_files = download_and_reproject_stac_file(date_val=date_val,
+                                  selected_products=selected_products2,
+#                                  selected_products=selected_products2_subset,
+                                  download=False,
+                                  aoi_poly=bbox_poly_gdf,
+                                  out_prefix=f'site_{i}',
+                                  output_epsg = None, #use the epsg from aoi_poly
+                                  output_res=output_res,
+                                  out_dir='.')
+    list_output_files.append(output_files)
+  os.chdir(out_dir)
+  return list_output_files
