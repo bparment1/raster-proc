@@ -66,13 +66,11 @@ from pyproj import Transformer
 from typing import List, Tuple, Dict, Any
 from pandas.core.arrays import boolean
 
-#https://github.com/stac-utils/pystac-client/blob/1eaf0d97632c411279e8312b337faf842d657474/docs/tutorials/stac-metadata-viz.ipynb
-#Change the name of the file to include date and better formatting
-#Also adjust the resolution
 def download_and_reproject_stac_file(date_val:str,
                                      selected_products:pd.DataFrame,
                                      download: bool,
                                      aoi_poly:gpd.GeoDataFrame,
+                                     out_prefix:str=None,
                                      output_epsg: int=None,
                                      output_res: np.float32=None,
                                      out_dir:str='.') -> str:
@@ -83,6 +81,7 @@ def download_and_reproject_stac_file(date_val:str,
   :param selected_products: pd.DataFrame
   :param download: boolean, if true download the raw file without processing
   :param aoi_poly: gpd.GeoDataFrame containing the reference poygon of Area of Interest
+  :param out_prefix: str: prefix for output file name
   :param output_epsg: int code for EPSG projection coordinate system
   :param output_res: np.float32 resolution of output raster
   :param out_dir: str path to output directory
@@ -90,11 +89,12 @@ def download_and_reproject_stac_file(date_val:str,
    '''
 
   bands_cols = list(selected_products.filter(regex='assets').columns)
+  out_raster_file = []
 
   for band in bands_cols:
     if download is True:
         raster_file_list = selected_products.loc[selected_products['date']==date_val,band].tolist()
-        out_raster_file =[]
+        #out_raster_file =[]
         for raster_file in raster_file_list:
            download_path = os.path.join(selected_products.collection)
            in_filename = raster_file
@@ -108,10 +108,10 @@ def download_and_reproject_stac_file(date_val:str,
 
     #crop and project if download is false
     if download is False:
-
+      #out_raster_file =[]
       # Set the AOI cropping
       proj_crs = selected_products.loc[selected_products['date']==date_val,'properties.proj:epsg'].tolist()
-      print(proj_crs) #this is the EPSG code
+      #print(proj_crs) #this is the EPSG code
       aoi_poly_proj = aoi_poly.to_crs(f'EPSG:{proj_crs[0]}') #should first extract current EPSG!!
       aoi_poly_proj.to_file('aoi_poly_proj.shp')
       aoi_poly_proj.crs
@@ -133,9 +133,14 @@ def download_and_reproject_stac_file(date_val:str,
                                     data_val_formatted)
       os.makedirs(download_path, exist_ok=True) # add date
 
-      out_filename=os.path.join(out_dir,
+      if out_prefix is None:
+        out_filename=os.path.join(out_dir,
                                 download_path, #add date in output path?
-                                f'crop_proj_{selected_products2.collection.unique()[0]}_{band}_{data_val_formatted}.tif')
+                                f'crop_proj_{selected_products.collection.unique()[0]}_{band}_{data_val_formatted}.tif')
+      else:
+        out_filename=os.path.join(out_dir,
+                                download_path, #add date in output path?
+                                f'{out_prefix}_crop_proj_{selected_products.collection.unique()[0]}_{band}_{data_val_formatted}.tif')
       raster_file_list = selected_products.loc[selected_products['date']==date_val,band].tolist()
 
       #from pathlib import Path
@@ -159,10 +164,9 @@ def download_and_reproject_stac_file(date_val:str,
                           xRes=output_res, #this should not be hard coded
                           yRes=output_res)
       result=None
-      out_raster_file = out_filename
+      out_raster_file.append(out_filename)
 
   return out_raster_file
-
 
 #https://gis.stackexchange.com/questions/290796/how-to-edit-the-metadata-for-individual-bands-of-a-multiband-raster-preferably
 def update_description_gdal(filepath: str,

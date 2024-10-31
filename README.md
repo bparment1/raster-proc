@@ -1,13 +1,15 @@
 # raster-proc
 Raster processing and modeling python package for Earth Observation data.
 
-This package contains general functions to download, process and model Earth Observation/Remote Sensing data. The goal is
+This package contains general functions to download, process and model Earth Observation/Remote Sensing data. 
 It contains the following functionalities:
 
-- processing: download from STAC and procesing function for COGS and more
+- processing: download from STAC and processing function for COGS and more
 - plotting: plotting categorical raster, time series and more
 - modeling: applying sklearn and tensorflow model to raster with ease
 - timeseries: creating stack of raster for timeseries analyses
+
+
 
 # INSTALL
 
