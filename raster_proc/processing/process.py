@@ -564,6 +564,7 @@ def dms_to_dd(val: np.float32) -> np.float32:
   return dd_val
 
 
+
 def bbox_to_poly(bbox: list) -> Polygon:
 
   '''
@@ -586,7 +587,7 @@ def bbox_to_poly(bbox: list) -> Polygon:
 
   return poly
 
-
+#remove +init epsg because depecated (October 2024)
 def polygon_from_centroid(x_centroid,y_centroid,size,EPSG_val=4326)-> gpd.GeoDataFrame:
 
   '''
@@ -611,43 +612,48 @@ def polygon_from_centroid(x_centroid,y_centroid,size,EPSG_val=4326)-> gpd.GeoDat
   bbox_poly = bbox_to_poly(bbox_list)
 
   bbox_poly_gdf = gpd.GeoDataFrame(pd.DataFrame(['p1'], columns = ['geom']),
-         crs = {'init':f'epsg:{EPSG_val}'},
+         crs = f'EPSG:{EPSG_val}',
          geometry = [bbox_poly])
   bbox_poly_gdf.to_file('bbox_poly.shp')
 
   return bbox_poly_gdf
 
+
+
 def get_selected_products_and_bands(cat_search: item_search.ItemSearch,
                                     bands_selected: list[str],
-                                    platform: str='Sentinel-2A') -> pd.DataFrame:
+                                    platform: str='Sentinel-2A') ->  Tuple[pd.DataFrame, gpd.GeoDataFrame]:
 
   '''
   Get the selected products and bands from STAC
 
   :param items: pystac_client item search object
   :param bands_selected: list of bands to filter
-  :return: pandas data frame containing the selected products and bands
+  :return: tuple with pandas data frame containing the selected products and bands and geodataframe containing footprint of data
   '''
 
-  items_dict = [i.to_dict() for i in cat_search.get_items()]
-  print(f"{len(items_dict)} scenes fetched")
-  items = items_to_geodataframe(items_dict)
+  items_dict = [i.to_dict() for i in cat_search.items()]
+  #print(f"{len(items_dict)} scenes fetched")
+  items_gdf = items_to_geodataframe(items_dict)
   bands_selected = [f'assets.{b}.href'for b in bands_selected]
-  bands_selected
-  col_selected = bands_selected + ['collection','id','properties.s2:mgrs_tile','properties.proj:epsg']
-  if platform is not None:
-    selected_products = items.loc[items['properties.platform']==platform,col_selected] #filter for relevant platform
+  if platform is 'Sentinel-2A':
+    col_selected = bands_selected + ['collection','id','properties.s2:mgrs_tile','properties.proj:epsg']
+  if platform in ['Sentinel-1A','Sentinel-1B']:
+    col_selected = bands_selected + ['collection','id','properties.platform','properties.proj:epsg']
   else:
-    selected_products = items.loc[:,col_selected] #filter for relevant platform
+    col_selected = bands_selected + ['collection','id','properties.proj:epsg']
+
+  if platform is not None:
+    selected_products = items_gdf.loc[items_gdf['properties.platform']==platform,col_selected] #filter for relevant platform
+  else:
+    selected_products = items_gdf.loc[:,col_selected] #filter for relevant platform
 
   selected_products = selected_products.reset_index()
-  print(selected_products['properties.datetime'].dtypes)
+  #print(selected_products['properties.datetime'].dtypes)
   selected_products['date'] = selected_products['properties.datetime'].dt.date
   selected_products['date'] = selected_products['date'].astype(str)
-  list_dates = list(selected_products['date'].unique())
-  list_tiles = selected_products['properties.s2:mgrs_tile'].unique()
 
-  return selected_products
+  return (selected_products,items_gdf)
 
 def convert_window_block_to_poly(ds: str|rasterio.io.DatasetReader) -> gpd.GeoDataFrame:
 
